@@ -55,3 +55,21 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, () => console.log(`Lenus API running on http://localhost:${PORT}`));
+const router = express.Router();
+
+router.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+router.post("/login", (req, res) => {
+  // ...keep your existing login code exactly as it is
+});
+
+app.use("/api", router);
+app.use("/", router);
+
+// keep your 404 and error handlers here
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+}
+
+export default app;
