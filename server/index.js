@@ -4,7 +4,7 @@ import cors from "cors";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: true }));
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
 
 // Mock user store (no database needed for this project)
@@ -54,22 +54,9 @@ app.use((err, _req, res, _next) => {
   res.status(err.status || 500).json({ message: "Something went wrong." });
 });
 
-app.listen(PORT, () => console.log(`Lenus API running on http://localhost:${PORT}`));
-const router = express.Router();
-
-router.get("/health", (_req, res) => res.json({ status: "ok" }));
-
-router.post("/login", (req, res) => {
-  // ...keep your existing login code exactly as it is
-});
-
-app.use("/api", router);
-app.use("/", router);
-
-// keep your 404 and error handlers here
-
+// Only listen when running locally; Vercel runs the exported app itself
 if (!process.env.VERCEL) {
-  app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+  app.listen(PORT, () => console.log(`Lenus API running on http://localhost:${PORT}`));
 }
 
 export default app;
