@@ -1,18 +1,18 @@
 import express from "express";
 import cors from "cors";
-import cors from 'cors';
-app.use(cors({
-  origin: ["https://your-frontend.vercel.app", "http://localhost:5173"],
-  credentials: true
-}));
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
+// Allow all localhost ports for Vite
+app.use(cors({ 
+  origin: ["http://localhost:5173","http://localhost:5174","http://localhost:5175","http://localhost:5176","http://localhost:3000"], 
+  credentials: true 
+}));
+
 app.use(express.json());
 
-// Mock user store (no database needed for this project)
+// Mock user store
 const USERS = [
   { id: 1, name: "Aarav", email: "demo@lenus.dev", password: "Lenus@123" },
   { id: 2, name: "Meera", email: "meera@lenus.dev", password: "Welcome#2026" },
@@ -24,24 +24,18 @@ app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
 app.post("/api/login", (req, res) => {
   const { email, password } = req.body || {};
-
-  // Server-side validation (never trust the client)
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required." });
   }
   if (!EMAIL_RE.test(email)) {
     return res.status(400).json({ message: "Please enter a valid email address." });
   }
-
   const user = USERS.find(
     (u) => u.email.toLowerCase() === String(email).toLowerCase() && u.password === password
   );
-
   if (!user) {
     return res.status(401).json({ message: "Invalid email or password." });
   }
-
-  // Mock token – in a real app this would be a signed JWT
   const token = Buffer.from(`${user.id}:${Date.now()}`).toString("base64");
   return res.json({
     message: "Login successful",
@@ -50,16 +44,13 @@ app.post("/api/login", (req, res) => {
   });
 });
 
-// Fallback for unknown routes
 app.use((_req, res) => res.status(404).json({ message: "Not found." }));
 
-// Central error handler (e.g. malformed JSON)
 app.use((err, _req, res, _next) => {
   console.error(err.message);
   res.status(err.status || 500).json({ message: "Something went wrong." });
 });
 
-// Only listen when running locally; Vercel runs the exported app itself
 if (!process.env.VERCEL) {
   app.listen(PORT, () => console.log(`Lenus API running on http://localhost:${PORT}`));
 }

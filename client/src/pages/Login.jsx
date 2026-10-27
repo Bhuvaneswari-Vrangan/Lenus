@@ -8,7 +8,6 @@ function validate({ email, password }) {
   const errors = {};
   if (!email.trim()) errors.email = "Email is required.";
   else if (!EMAIL_RE.test(email.trim())) errors.email = "Enter a valid email address.";
-
   if (!password) errors.password = "Password is required.";
   else if (password.length < 6) errors.password = "Password must be at least 6 characters.";
   return errors;
@@ -21,12 +20,6 @@ export default function Login() {
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  // Change to your backend Vercel URL
-fetch("https://lenusapp-server.vercel.app/api/login", { 
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(data)
-})
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,7 +37,8 @@ fetch("https://lenusapp-server.vercel.app/api/login", {
     setLoading(true);
     setServerError("");
     try {
-      const { data } = await axios.post("/api/login", {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const { data } = await axios.post(`${API_URL}/api/login`, {
         email: form.email.trim(),
         password: form.password,
       });
@@ -84,64 +78,22 @@ fetch("https://lenusapp-server.vercel.app/api/login", {
         <form className="card" onSubmit={handleSubmit} noValidate>
           <h1>Welcome back</h1>
           <p className="card__sub">Sign in to continue to Lenus.</p>
-
-          {serverError && (
-            <div className="alert" role="alert">
-              {serverError}
-            </div>
-          )}
-
+          {serverError && <div className="alert" role="alert">{serverError}</div>}
           <div className="field">
             <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-              className={errors.email ? "invalid" : ""}
-              aria-invalid={!!errors.email}
-              aria-describedby={errors.email ? "email-err" : undefined}
-            />
-            {errors.email && <span id="email-err" className="field__error">{errors.email}</span>}
+            <input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" value={form.email} onChange={handleChange} className={errors.email ? "invalid" : ""} />
+            {errors.email && <span className="field__error">{errors.email}</span>}
           </div>
-
           <div className="field">
             <label htmlFor="password">Password</label>
             <div className="field__password">
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                placeholder="••••••••"
-                value={form.password}
-                onChange={handleChange}
-                className={errors.password ? "invalid" : ""}
-                aria-invalid={!!errors.password}
-                aria-describedby={errors.password ? "password-err" : undefined}
-              />
-              <button
-                type="button"
-                className="toggle"
-                onClick={() => setShowPassword((s) => !s)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-              >
-                {showPassword ? "Hide" : "Show"}
-              </button>
+              <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" placeholder="••••••••" value={form.password} onChange={handleChange} className={errors.password ? "invalid" : ""} />
+              <button type="button" className="toggle" onClick={() => setShowPassword((s) => !s)}>{showPassword ? "Hide" : "Show"}</button>
             </div>
-            {errors.password && <span id="password-err" className="field__error">{errors.password}</span>}
+            {errors.password && <span className="field__error">{errors.password}</span>}
           </div>
-
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? <span className="spinner" aria-label="Signing in" /> : "Sign in"}
-          </button>
-
-          <p className="hint">
-            Demo account: <code>demo@lenus.dev</code> / <code>Lenus@123</code>
-          </p>
+          <button className="btn" type="submit" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</button>
+          <p className="hint">Demo account: <code>demo@lenus.dev</code> / <code>Lenus@123</code></p>
         </form>
       </section>
     </main>
