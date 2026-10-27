@@ -21,6 +21,12 @@ export default function Login() {
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Change to your backend Vercel URL
+fetch("https://lenusapp-server.vercel.app/api/login", { 
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(data)
+})
 
   const handleChange = (e) => {
     const { name, value } = e.target;
