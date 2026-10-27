@@ -1,58 +1,39 @@
-import express from "express";
-import cors from "cors";
+import express from 'express';
+import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Allow all localhost ports for Vite
-app.use(cors({ 
-  origin: ["http://localhost:5173","http://localhost:5174","http://localhost:5175","http://localhost:5176","http://localhost:3000"], 
-  credentials: true 
-}));
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-// Mock user store
-const USERS = [
-  { id: 1, name: "Aarav", email: "demo@lenus.dev", password: "Lenus@123" },
-  { id: 2, name: "Meera", email: "meera@lenus.dev", password: "Welcome#2026" },
-];
+// HEALTH CHECK - This must be here for Render
+app.get('/', (req, res) => res.json({ message: 'Lenus API Running' }));
+app.get('/api', (req, res) => res.json({ message: 'Lenus API Running' }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', message: 'Server running on Render' }));
+app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
-
-app.post("/api/login", (req, res) => {
-  const { email, password } = req.body || {};
-  if (!email || !password) {
-    return res.status(400).json({ message: "Email and password are required." });
+// YOUR AUTH ROUTES
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  // Replace with your real DB logic
+  if (email) {
+    return res.json({ token: 'demo-token', user: { email, role: 'admin' } });
   }
-  if (!EMAIL_RE.test(email)) {
-    return res.status(400).json({ message: "Please enter a valid email address." });
-  }
-  const user = USERS.find(
-    (u) => u.email.toLowerCase() === String(email).toLowerCase() && u.password === password
-  );
-  if (!user) {
-    return res.status(401).json({ message: "Invalid email or password." });
-  }
-  const token = Buffer.from(`${user.id}:${Date.now()}`).toString("base64");
-  return res.json({
-    message: "Login successful",
-    token,
-    user: { id: user.id, name: user.name, email: user.email },
-  });
+  res.status(401).json({ message: 'Invalid login' });
 });
 
-app.use((_req, res) => res.status(404).json({ message: "Not found." }));
-
-app.use((err, _req, res, _next) => {
-  console.error(err.message);
-  res.status(err.status || 500).json({ message: "Something went wrong." });
+app.post('/api/register', (req, res) => {
+  res.json({ message: 'User registered' });
 });
 
-if (!process.env.VERCEL) {
-  app.listen(PORT, () => console.log(`Lenus API running on http://localhost:${PORT}`));
-}
+// IMPORTANT: This catches everything else - MUST be last
+app.use((req, res) => {
+  res.status(404).json({ message: `Route not found: ${req.method} ${req.originalUrl}` });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
 
 export default app;
